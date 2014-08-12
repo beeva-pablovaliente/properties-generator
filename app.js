@@ -5,11 +5,15 @@ var commander = require("commander");
 var colors = require("colors");
 var mkdirp = require('mkdirp');
 
+function list(val) {
+  return val.split(',');
+}
 
 //Procesamos los argumentos recibidos
 commander
 	.version('0.0.1')
 	.usage(': node app.js [options]')
+	//.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', list, ['DEV'])
 	.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
 	.option('-i, --input <file>', 'CSV File to read')
 	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
@@ -121,11 +125,7 @@ fs.createReadStream(commander.input,fs_enconding)
 			checkSection(row, stringifier);
 
 	    	//Añadimos la propiedad que acabamos de leer
-	    	if (row[env] === ''){
-	    		stringifier.property ({ key: row['Property'], value: row[defaultColumn] });
-	    	}else{
-	    		stringifier.property ({ key: row['Property'], value: row[env] });
-	    	}
+	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultColumn] }) : stringifier.property ({ key: row['Property'], value: row[env] });
 
 	    	//stringifier.section({ name: "my section", comment: "My Section" });
 	    }else if(!filterRow(row)){
@@ -133,11 +133,7 @@ fs.createReadStream(commander.input,fs_enconding)
 	    	//Comprobamos si es necesario añadir alguna sección
 	    	checkSection(row, stringifier);
 
-	    	if (row[env] === ''){
-	    		stringifier.property ({ key: row['Property'], value: row[defaultColumn] });
-	    	}else{
-	    		stringifier.property ({ key: row['Property'], value: row[env] });
-	    	}
+	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultColumn] }) : stringifier.property ({ key: row['Property'], value: row[env] });
 	    }
 	    // handle each row before the "end" or "error" stuff happens above
 	}))
