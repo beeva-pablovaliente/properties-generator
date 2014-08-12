@@ -11,7 +11,7 @@ commander
 	//.usage('node app.js [options]')
 	.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
 	.option('-i, --input <file>', 'CSV File to read')
-	.option('-o, --output <file>', 'Directory to store the generated files. It must exist')
+	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
 	.option('-s, --section <column>', 'The name of the column to use as Section name. Default Seccion', 'Seccion')
 	.option('--type <type>', 'Type of the generated file [properties | ini]', 'properties')
 	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file', '#')
@@ -27,7 +27,7 @@ var section = commander.section;
 (function checkParameters(commander){
 	if (!commander.input ||	!commander.output){
 		commander.help();
-		//process.exit(1);	
+		process.exit(1);
 	}
 
 	console.log("----------------------------------------");
@@ -65,8 +65,10 @@ function filterRow(row){
  * Escribe en el fichero 'filename' los datos especificados en 'data'
  */
 function writeData(filename, data){
+	var outputDir = commander.output.indexOf('/', commander.output.length - '/'.length) !== -1 ? commander.output : commander.output+'/';
+
 	if (filename !== ''){
-		fs.writeFile(commander.output+filename+extension, data, fs_enconding, function (err) {
+		fs.writeFile(outputDir+filename+extension, data, fs_enconding, function (err) {
 		  if (err) {
 		  	console.log(err);
 		  	throw err;
