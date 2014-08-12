@@ -44,6 +44,8 @@ var stringifier;
 //Variables para controlar el nombre del fichero a escribir y cuantos ficheros se han escrito
 var fileName = '';
 var fileNumber = 0;
+//Variable para controlar el nombre de la seccion
+var sectionName = '';
 
 //Codificacion de los ficheros de entrada y salida
 var fs_enconding = { encoding: 'utf8' };
@@ -67,6 +69,13 @@ function filterRow(row){
 function writeData(filename, data){
 	var outputDir = commander.output.indexOf('/', commander.output.length - '/'.length) !== -1 ? commander.output : commander.output+'/';
 
+	outputDir = outputDir + env + '/';
+
+	//Si el directorio de destino no existe, lo creamos antes de intentar escribir
+	if (!fs.existsSync(outputDir)){
+		fs.mkdirSync(outputDir);
+	}
+
 	if (filename !== ''){
 		fs.writeFile(outputDir+filename+extension, data, fs_enconding, function (err) {
 		  if (err) {
@@ -80,8 +89,11 @@ function writeData(filename, data){
 }
 
 function checkSection(row, stringifier){
-	if (row[section] !== '' && extension === '.ini'){
-		stringifier.section(row[section]);
+	if (extension === '.ini'){
+		if (row[section] !== sectionName){
+			stringifier.section(row[section]);
+			sectionName = row[section];
+		}
 	}
 }
 
@@ -102,6 +114,10 @@ fs.createReadStream(commander.input,fs_enconding)
 
 	    	//Reinicializamos nuestro stringifier
 	    	stringifier = properties.createStringifier();
+
+			//Comprobamos si es necesario añadir alguna sección
+			checkSection(row, stringifier);
+
 	    	//Añadimos la propiedad que acabamos de leer
 	    	if (row[env] === ''){
 	    		stringifier.property ({ key: row['Property'], value: row[defaultColumn] });
@@ -112,6 +128,7 @@ fs.createReadStream(commander.input,fs_enconding)
 	    	//stringifier.section({ name: "my section", comment: "My Section" });
 	    }else if(!filterRow(row)){
 
+	    	//Comprobamos si es necesario añadir alguna sección
 	    	checkSection(row, stringifier);
 
 	    	if (row[env] === ''){
