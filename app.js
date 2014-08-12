@@ -3,12 +3,13 @@ var csv = require('csv');
 var fs = require('fs');
 var commander = require("commander");
 var colors = require("colors");
+var mkdirp = require('mkdirp');
 
 
 //Procesamos los argumentos recibidos
 commander
 	.version('0.0.1')
-	//.usage('node app.js [options]')
+	.usage(': node app.js [options]')
 	.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
 	.option('-i, --input <file>', 'CSV File to read')
 	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
@@ -73,7 +74,8 @@ function writeData(filename, data){
 
 	//Si el directorio de destino no existe, lo creamos antes de intentar escribir
 	if (!fs.existsSync(outputDir)){
-		fs.mkdirSync(outputDir);
+		//fs.mkdirSync(outputDir);
+		mkdirp.sync(outputDir, { mode : 0755});
 	}
 
 	if (filename !== ''){
@@ -83,7 +85,7 @@ function writeData(filename, data){
 		  	throw err;
 		  }
 		  
-		  console.log('Generado: '.green + filename+extension);
+		  console.log('Generado: '.green + outputDir+filename+extension);
 		});
 	}
 }
