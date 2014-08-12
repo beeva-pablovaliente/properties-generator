@@ -1,0 +1,28 @@
+{
+  "name": "properties-generator",
+  "version": "0.0.1",
+  "description": "Convert a CSV file into a Properties with Sections if necesary",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js -e DEV -i file.csv -o dir_output/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/rekkeb/properties-generator.git"
+  },
+  "keywords": [
+    "properties",
+    "csv",
+    "generator"
+  ],
+  "dependencies": {
+    "commander": ">=2.3.0",
+    "csv": ">=0.4.0",
+    "properties": ">=1.2.1",
+    "colors" : ">=0.6.2"
+  },
+  "author": "Pablo Valiente",
+  "license": "BSD",
+  "readmeFilename": "README.md",
+  "gitHead": "ed1f85622b00289b7c17f00265bb8baa0fe4710d"
+}
