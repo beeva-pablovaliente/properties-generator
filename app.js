@@ -2,7 +2,7 @@ var properties = require ("properties");
 var csv = require('csv');
 var fs = require('fs');
 var commander = require("commander");
-var colors = require("colors");
+require("colors");
 var mkdirp = require('mkdirp');
 
 function list(val) {
@@ -143,7 +143,7 @@ fs.createReadStream(commander.input,fs_enconding)
 	})
 	.on('end', function() {
     	console.log('Generados %s ficheros'.grey, fileNumber);
-    	
+
     	//Antes de terminar, volcamos el contenido de la variabla al fichero correspondiente
 	    writeData(fileName, properties.stringify (stringifier, optionsStr));
 	})
