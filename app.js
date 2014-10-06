@@ -88,7 +88,6 @@ function writeData(filename, data){
 		  	console.log(err);
 		  	throw err;
 		  }
-		  
 		  console.log('Generado: '.green + outputDir+filename+extension);
 		});
 	}
