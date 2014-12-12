@@ -18,13 +18,13 @@ commander
 	.option('-i, --input <file>', 'CSV File to read')
 	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
 	.option('-s, --section <column>', 'The name of the column to use as Section name. Default Seccion', 'Seccion')
-	.option('--type <type>', 'Type of the generated file [properties | ini]', 'properties')
+	.option('-t, --type <type>', 'Type of the generated file [properties | ini]', 'properties')
 	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file', '#')
-	.option('--defaultColumn <col>', 'If the enviroment selected has no value set, select the value from this column. Default DEV', 'DEV')
+	.option('--defaultEnv <col>', 'If the enviroment selected has no value set, select the value from this column. Default DEV', 'DEV')
   	.parse(process.argv);
 
 var env = commander.environment;
-var defaultColumn = commander.defaultColumn;
+var defaultEnv = commander.defaultEnv;
 var extension = '.'+commander.type;
 var section = commander.section;
 
@@ -37,7 +37,7 @@ var section = commander.section;
 
 	console.log("----------------------------------------");
 	console.log("Selected Environment: %s".yellow, env.magenta);
-	console.log("Column to select for default value: %s".yellow, defaultColumn.magenta);
+	console.log("Default Environment value: %s".yellow, defaultEnv.magenta);
 	console.log("Generating ".yellow + extension.magenta + " files".yellow);
 	console.log("----------------------------------------");
 	
@@ -68,12 +68,17 @@ function filterRow(row){
 	}
 }
 
+function hasToWriteFile(filename){
+    return filename !== '';
+}
+
 /*
  * Escribe en el fichero 'filename' los datos especificados en 'data'
  */
 function writeData(filename, data){
+    //Extraemos el directorio de salida, que viene especificado en los parametros de entrada
 	var outputDir = commander.output.indexOf('/', commander.output.length - '/'.length) !== -1 ? commander.output : commander.output+'/';
-
+    //Dentro de ese directorio generamos el directorio del entorno
 	outputDir = outputDir + env + '/';
 
 	//Si el directorio de destino no existe, lo creamos antes de intentar escribir
@@ -82,7 +87,7 @@ function writeData(filename, data){
 		mkdirp.sync(outputDir, { mode : 0755});
 	}
 
-	if (filename !== ''){
+	if (hasToWriteFile(filename)){
 		fs.writeFile(outputDir+filename+extension, data, fs_enconding, function (err) {
 		  if (err) {
 		  	console.log(err);
@@ -124,7 +129,7 @@ fs.createReadStream(commander.input,fs_enconding)
 			checkSection(row, stringifier);
 
 	    	//Añadimos la propiedad que acabamos de leer
-	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultColumn] }) : stringifier.property ({ key: row['Property'], value: row[env] });
+	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultEnv] }) : stringifier.property ({ key: row['Property'], value: row[env] });
 
 	    	//stringifier.section({ name: "my section", comment: "My Section" });
 	    }else if(!filterRow(row)){
@@ -132,7 +137,7 @@ fs.createReadStream(commander.input,fs_enconding)
 	    	//Comprobamos si es necesario añadir alguna sección
 	    	checkSection(row, stringifier);
 
-	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultColumn] }) : stringifier.property ({ key: row['Property'], value: row[env] });
+	    	row[env] === '' ? stringifier.property ({ key: row['Property'], value: row[defaultEnv] }) : stringifier.property ({ key: row['Property'], value: row[env] });
 	    }
 	    // handle each row before the "end" or "error" stuff happens above
 	}))
