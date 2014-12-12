@@ -19,6 +19,7 @@ commander
 	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
 	.option('-s, --section <column>', 'The name of the column to use as Section name. Default Seccion', 'Seccion')
 	.option('-t, --type <type>', 'Type of the generated file [properties | ini]', 'properties')
+    .option('-f, --filterFiles <regexp_files>', 'RegExp to generate only the files that match. Example files that end with th: th$', '')
 	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file', '#')
 	.option('--defaultEnv <col>', 'If the enviroment selected has no value set, select the value from this column. Default DEV', 'DEV')
   	.parse(process.argv);
@@ -27,6 +28,7 @@ var env = commander.environment;
 var defaultEnv = commander.defaultEnv;
 var extension = '.'+commander.type;
 var section = commander.section;
+var filterFiles = commander.filterFiles;
 
 //Comprobamos que los parametros de entrada sean correctos
 (function checkParameters(commander){
@@ -58,6 +60,8 @@ var fs_enconding = { encoding: 'utf8' };
 //Caracter de Comentario para los ficheros properties de salida
 var optionsStr = { comment: "#" };
 
+var filteredFiles = [];
+
 /*
  * Indica si debemos filtrar una columna del fichero de entrada
  * y evitar que se propague en la salida
@@ -69,7 +73,18 @@ function filterRow(row){
 }
 
 function hasToWriteFile(filename){
-    return filename !== '';
+    var res = false;
+
+    if (filename !== ''){
+        if (filterFiles === '' || filename.match(filterFiles)){
+            res = true; //No tenemos que filtrar el fichero
+        }else if (filteredFiles.indexOf(filename) < 0) {
+            filteredFiles.push(filename);
+        }
+
+    }
+
+    return res;
 }
 
 /*
@@ -146,10 +161,12 @@ fs.createReadStream(commander.input,fs_enconding)
   		//Sin capturar este evento no salta el evento 'end'
 	})
 	.on('end', function() {
-    	console.log('Generados %s ficheros'.grey, fileNumber);
-
     	//Antes de terminar, volcamos el contenido de la variabla al fichero correspondiente
 	    writeData(fileName, properties.stringify (stringifier, optionsStr));
+
+        console.log('Generados %s ficheros'.grey, fileNumber - filteredFiles.length);
+
+        if (filteredFiles.length > 0) console.log('Ignorados %s ficheros: %s'.grey, filteredFiles.length, filteredFiles);
 	})
 	.on('error', function(error) {
     	console.log("Error: "+error);
