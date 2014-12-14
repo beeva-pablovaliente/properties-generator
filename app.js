@@ -12,11 +12,11 @@ function list(val) {
 //Procesamos los argumentos recibidos
 commander
 	.version('0.1.0')
-	.usage(': node app.js [options]')
+	.usage(': node app.js -i <file> -o <directory> [options]')
+    .option('-i, --input <file>', 'CSV File to read')
+    .option('-o, --output <directory>', 'Directory to store the generated files. It must be writtable')
 	.option('-e, --environment <ENV>', 'Select the environment(s) to generate the properties for. Default LOC,DEV,PRE,PRO', list, ['LOC','DEV','PRE','PRO'])
 	//.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
-	.option('-i, --input <file>', 'CSV File to read')
-	.option('-o, --output <directory>', 'Directory to store the generated files. It must be writtable')
 	.option('-s, --section <column>', 'The name of the column to use as Section name. Default: Seccion', 'Seccion')
 	.option('-t, --type <type>', 'Type of the generated file(s) [properties | ini]. Default: properties', 'properties')
     .option('-f, --filterFiles <regexp_files>', 'RegExp to generate only the files that match. Example: files that end with th: th$', '')
