@@ -11,17 +11,17 @@ function list(val) {
 
 //Procesamos los argumentos recibidos
 commander
-	.version('0.0.1')
+	.version('0.1.0')
 	.usage(': node app.js [options]')
 	.option('-e, --environment <ENV>', 'Select the environment(s) to generate the properties for. Default LOC,DEV,PRE,PRO', list, ['LOC','DEV','PRE','PRO'])
 	//.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
 	.option('-i, --input <file>', 'CSV File to read')
-	.option('-o, --output <directory>', 'Directory to store the generated files. It must exist')
-	.option('-s, --section <column>', 'The name of the column to use as Section name. Default Seccion', 'Seccion')
-	.option('-t, --type <type>', 'Type of the generated file [properties | ini]', 'properties')
-    .option('-f, --filterFiles <regexp_files>', 'RegExp to generate only the files that match. Example files that end with th: th$', '')
-	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file', '#')
-	.option('--defaultEnv <col>', 'If the enviroment selected has no value set, select the value from this column. Default DEV', 'DEV')
+	.option('-o, --output <directory>', 'Directory to store the generated files. It must be writtable')
+	.option('-s, --section <column>', 'The name of the column to use as Section name. Default: Seccion', 'Seccion')
+	.option('-t, --type <type>', 'Type of the generated file(s) [properties | ini]. Default: properties', 'properties')
+    .option('-f, --filterFiles <regexp_files>', 'RegExp to generate only the files that match. Example: files that end with th: th$', '')
+	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file. Default: #', '#')
+	.option('--defaultEnv <col>', 'If the enviroment selected has no value set, select the value from this column. Default: DEV', 'DEV')
   	.parse(process.argv);
 
 var env = commander.environment;
@@ -59,7 +59,7 @@ var fs_enconding = { encoding: 'utf8' };
 //Caracter de Comentario para los ficheros properties de salida
 var optionsStr = { comment: "#" };
 
-//Almacenamos los datos antes de escribirlos a discos
+//Almacenamos los datos antes de escribirlos a disco
 var mapFiles = {};
 //Listado de ficheros que se han filtrado. Para mostrarlo al finalizar la ejecución
 var filteredFiles = [];
@@ -107,6 +107,8 @@ function writeFileEnvironment(env){
     //Numero de ficheros generados para este entorno
     var generatedFileNumber = 0;
 
+    console.log('Environment: %s'.blue, env);
+
     //Recorremos nuestro mapa de ficheros y generamos cada fichero para el entorno especificado
     for (var filename in mapFiles[env]){
         //Por cada fichero comprobamos si tenemos que escribirlo o no
@@ -119,13 +121,21 @@ function writeFileEnvironment(env){
                 console.log('Generado: '.green + outputDir + filename + extension);
                 generatedFileNumber++;
             }catch(err){
-                console.log('Error al escribir el fichero %s'.red, outputDir + filename + extension);
+                console.log('Error al escribir el fichero: '.red + outputDir + filename + extension);
                 console.log(err);
             }
         }
     }
-    console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber, env);
-    if (filteredFiles.length > 0) console.log('Ignorados %s ficheros para el entorno %s: %s'.grey, filteredFiles.length, env, filteredFiles);
+    console.log(generatedFileNumber > 1 ? 'Generados %s ficheros para el entorno %s'.grey
+                                        : 'Generado %s fichero para el entorno %s'.grey
+                , generatedFileNumber, env);
+
+    if (filteredFiles.length > 0)
+        console.log(filteredFiles.length > 1 ? 'Ignorados %s ficheros para el entorno %s: %s'.grey
+                                             : 'Ignorado %s fichero para el entorno %s: %s'.grey
+            , filteredFiles.length, env, filteredFiles);
+
+    console.log("----------------------------------------");
 }
 
 function checkSection(row, stringifier){
@@ -135,10 +145,6 @@ function checkSection(row, stringifier){
 			sectionName = row[section];
 		}
 	}
-}
-
-for (var i=0; i < env.length; i++) {
-    processFileForEnvironment(env[i]);
 }
 
 function processFileForEnvironment(environment){
@@ -183,4 +189,9 @@ function processFileForEnvironment(environment){
         .on('error', function (error) {
             console.log("Error: " + error);
         });
+}
+
+//Lanza la ejecución del programa
+for (var i=0; i < env.length; i++) {
+    processFileForEnvironment(env[i]);
 }
