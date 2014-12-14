@@ -59,6 +59,9 @@ var fs_enconding = { encoding: 'utf8' };
 //Caracter de Comentario para los ficheros properties de salida
 var optionsStr = { comment: "#" };
 
+//Almacenamos los datos antes de escribirlos a discos
+var mapFiles = {};
+//Listado de ficheros que se han filtrado. Para mostrarlo al finalizar la ejecución
 var filteredFiles = [];
 
 /*
@@ -74,7 +77,7 @@ function filterRow(row){
 function hasToWriteFile(filename){
     var res = false;
 
-    if (filename !== ''){
+    if (filename && filename !== ''){
         if (filterFiles === '' || filename.match(filterFiles)){
             res = true; //No tenemos que filtrar el fichero
         }else if (filteredFiles.indexOf(filename) < 0) {
@@ -89,7 +92,7 @@ function hasToWriteFile(filename){
 /*
  * Escribe en el fichero 'filename' los datos especificados en 'data'
  */
-function writeFileEnvironment(filename, env, data){
+function writeFileEnvironment(env){
     //Extraemos el directorio de salida, que viene especificado en los parametros de entrada
 	var outputDir = commander.output.indexOf('/', commander.output.length - '/'.length) !== -1 ? commander.output : commander.output+'/';
     //Dentro de ese directorio generamos el directorio del entorno
@@ -101,16 +104,28 @@ function writeFileEnvironment(filename, env, data){
 		mkdirp.sync(outputDir, { mode : 0755});
 	}
 
-	if (hasToWriteFile(filename)){
-		fs.writeFile(outputDir+filename+extension, data, fs_enconding, function (err) {
-		  if (err) {
-              console.log('Error al escribir el fichero %s'.red, outputDir+filename+extension);
-              console.log(err);
-		  } else {
-              console.log('Generado: '.green + outputDir + filename + extension);
-          }
-		});
-	}
+    //Numero de ficheros generados para este entorno
+    var generatedFileNumber = 0;
+
+    //Recorremos nuestro mapa de ficheros y generamos cada fichero para el entorno especificado
+    for (var filename in mapFiles[env]){
+        //Por cada fichero comprobamos si tenemos que escribirlo o no
+        if (hasToWriteFile(filename)) {
+            //Preparamos los datos a escribir
+            var data = properties.stringify(mapFiles[env][filename], optionsStr);
+            try{
+                fs.writeFileSync(outputDir + filename + extension, data, fs_enconding);
+                //Si no hay excepcion, el fichero se escribió correctamente
+                console.log('Generado: '.green + outputDir + filename + extension);
+                generatedFileNumber++;
+            }catch(err){
+                console.log('Error al escribir el fichero %s'.red, outputDir + filename + extension);
+                console.log(err);
+            }
+        }
+    }
+    console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber - filteredFiles.length, env);
+    if (filteredFiles.length > 0) console.log('Ignorados %s ficheros para el entorno %s: %s'.grey, filteredFiles.length, env, filteredFiles);
 }
 
 function checkSection(row, stringifier){
@@ -126,10 +141,7 @@ for (var i=0; i < env.length; i++) {
     processFileForEnvironment(env[i]);
 }
 
-var mapFiles = {};
 function processFileForEnvironment(environment){
-    //Cantidad de ficheros generados por entorno
-    var generatedFileNumber = 0;
     //Inicializamos nuestro stringifier
     var stringifier;
 
@@ -165,12 +177,8 @@ function processFileForEnvironment(environment){
             //Sin capturar este evento no salta el evento 'end'
         })
         .on('end', function () {
-            //Antes de terminar, volcamos el contenido de la variabla al fichero correspondiente
-            //writeData(fileName, environment, properties.stringify(stringifier, optionsStr));
-
-            console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber - filteredFiles.length, environment);
-
-            if (filteredFiles.length > 0) console.log('Ignorados %s ficheros para el entorno %s: %s'.grey, filteredFiles.length, environment, filteredFiles);
+            //Volcamos el contenido del entorno actual al fichero correspondiente
+            writeFileEnvironment(environment);
         })
         .on('error', function (error) {
             console.log("Error: " + error);
