@@ -89,7 +89,7 @@ function hasToWriteFile(filename){
 /*
  * Escribe en el fichero 'filename' los datos especificados en 'data'
  */
-function writeData(filename, env, data){
+function writeFileEnvironment(filename, env, data){
     //Extraemos el directorio de salida, que viene especificado en los parametros de entrada
 	var outputDir = commander.output.indexOf('/', commander.output.length - '/'.length) !== -1 ? commander.output : commander.output+'/';
     //Dentro de ese directorio generamos el directorio del entorno
@@ -122,51 +122,43 @@ function checkSection(row, stringifier){
 	}
 }
 
-/*
- * Abre el flujo de lectura del fichero csv y procesa una a una cada línea
- */
-var i = 0;
-for (i=0; i < env.length; i++) {
+for (var i=0; i < env.length; i++) {
     processFileForEnvironment(env[i]);
 }
 
-
+var mapFiles = {};
 function processFileForEnvironment(environment){
     //Cantidad de ficheros generados por entorno
     var generatedFileNumber = 0;
+    //Inicializamos nuestro stringifier
+    var stringifier;
 
+    /*
+     * Abre el flujo de lectura del fichero csv y procesa una a una cada línea
+     */
     fs.createReadStream(commander.input, fs_enconding)
         .pipe(csv.parse({delimiter: '#', columns: true, skip_empty_lines: true}))
         .pipe(csv.transform(function (row) {
-            if (row['Fichero'] !== fileName && !filterRow(row)) {
-                //Indicamos el cambio de fichero
-                generatedFileNumber++;
-
-                //Escribimos en disco el anterior fichero que se estaba procesando (si habia alguno procesado ya)
-                writeData(fileName, environment, properties.stringify(stringifier, optionsStr));
+            if (fileName !== row['Fichero']){
                 //Actualizamos el nombre del nuevo fichero a generar
                 fileName = row['Fichero'];//La proxima vez que el nombre del fichero cambie, será este fichero el que se escriba
 
                 //Reinicializamos nuestro stringifier
                 stringifier = properties.createStringifier();
 
-                //Comprobamos si es necesario añadir alguna sección
-                checkSection(row, stringifier);
-
-                //Añadimos la propiedad que acabamos de leer
-                row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv] })
-                    : stringifier.property({ key: row['Property'], value: row[environment] });
-
-                //stringifier.section({ name: "my section", comment: "My Section" });
-            } else if (!filterRow(row)) {
-
-                //Comprobamos si es necesario añadir alguna sección
-                checkSection(row, stringifier);
-
-                row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv] })
-                    : stringifier.property({ key: row['Property'], value: row[environment] });
+                if (!mapFiles[environment]){
+                    mapFiles[environment] = [];
+                }
+                mapFiles[environment][fileName] = stringifier;
             }
-            // handle each row before the "end" or "error" stuff happens above
+            //Si el fichero a escribir no ha cambiado, acumulamos la fila en la variable stringifier
+            if (!filterRow(row)){
+                //Comprobamos si es necesario añadir alguna sección
+                checkSection(row, stringifier);
+
+                row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv] })
+                                        : stringifier.property({ key: row['Property'], value: row[environment] });
+            }
         }))
         .on('readable', function () {
             //console.log('readable');
@@ -174,7 +166,7 @@ function processFileForEnvironment(environment){
         })
         .on('end', function () {
             //Antes de terminar, volcamos el contenido de la variabla al fichero correspondiente
-            writeData(fileName, environment, properties.stringify(stringifier, optionsStr));
+            //writeData(fileName, environment, properties.stringify(stringifier, optionsStr));
 
             console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber - filteredFiles.length, environment);
 
