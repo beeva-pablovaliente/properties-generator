@@ -174,8 +174,8 @@ function processFileForEnvironment(environment){
                 //Comprobamos si es necesario añadir alguna sección
                 checkSection(row, stringifier);
 
-                row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv] })
-                                        : stringifier.property({ key: row['Property'], value: row[environment] });
+                row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv], comment: row['Comment']})
+                                        : stringifier.property({ key: row['Property'], value: row[environment], comment: row['Comment']});
             }
         }))
         .on('readable', function () {
