@@ -124,7 +124,7 @@ function writeFileEnvironment(env){
             }
         }
     }
-    console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber - filteredFiles.length, env);
+    console.log('Generados %s ficheros para el entorno %s'.grey, generatedFileNumber, env);
     if (filteredFiles.length > 0) console.log('Ignorados %s ficheros para el entorno %s: %s'.grey, filteredFiles.length, env, filteredFiles);
 }
 
