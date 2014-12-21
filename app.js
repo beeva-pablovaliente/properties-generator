@@ -191,7 +191,10 @@ function processFileForEnvironment(environment){
         });
 }
 
-//Lanza la ejecución del programa
-for (var i=0; i < env.length; i++) {
-    processFileForEnvironment(env[i]);
-}
+//Comienza la ejecución de la aplicación
+(function main(){
+    //Recorre la lista de entornos recibidos por parametro y genera los ficheros para cada uno de ellos
+    for (var i=0; i < env.length; i++) {
+        processFileForEnvironment(env[i]);
+    }
+})();
