@@ -48,8 +48,6 @@ var filterFiles = commander.filterFiles;
 //Variable para generar cada property
 var stringifier;
 
-//Variables para controlar el nombre del fichero a escribir
-var fileName = '';
 //Variable para controlar el nombre de la seccion
 var sectionName = '';
 
@@ -150,6 +148,8 @@ function checkSection(row, stringifier){
 function processFileForEnvironment(environment){
     //Inicializamos nuestro stringifier
     var stringifier;
+    //Nombre del fichero que se esta procesando
+    var fileName = '';
 
     /*
      * Abre el flujo de lectura del fichero csv y procesa una a una cada línea
@@ -157,18 +157,24 @@ function processFileForEnvironment(environment){
     fs.createReadStream(commander.input, fs_enconding)
         .pipe(csv.parse({delimiter: '#', columns: true, skip_empty_lines: true}))
         .pipe(csv.transform(function (row) {
+            //Si el nombre del fichero a procesar cambia, debemos reiniciar las variables
             if (fileName !== row['Fichero']){
                 //Actualizamos el nombre del nuevo fichero a generar
                 fileName = row['Fichero'];//La proxima vez que el nombre del fichero cambie, será este fichero el que se escriba
 
-                //Reinicializamos nuestro stringifier
-                stringifier = properties.createStringifier();
-
-                if (!mapFiles[environment]){
-                    mapFiles[environment] = [];
+                //Si el fichero ya se había procesado antes y tenemos un stringifier inicializado, lo utilizamos
+                if (mapFiles[environment] && mapFiles[environment][fileName]){
+                    stringifier = mapFiles[environment][fileName]; //Esta situación puede darse, si los properties q pertenecen a un fichero no aparecen todos seguidos
+                }else{
+                    if (!mapFiles[environment]) {
+                        mapFiles[environment] = [];
+                    }
+                    //Reinicializamos nuestro stringifier
+                    stringifier = properties.createStringifier();
+                    mapFiles[environment][fileName] = stringifier;
                 }
-                mapFiles[environment][fileName] = stringifier;
             }
+
             //Si el fichero a escribir no ha cambiado, acumulamos la fila en la variable stringifier
             if (!filterRow(row)){
                 //Comprobamos si es necesario añadir alguna sección
