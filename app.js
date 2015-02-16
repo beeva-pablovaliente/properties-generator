@@ -155,7 +155,7 @@ function processFileForEnvironment(environment){
      * Abre el flujo de lectura del fichero csv y procesa una a una cada línea
      */
     fs.createReadStream(commander.input, fs_enconding)
-        .pipe(csv.parse({delimiter: '#', columns: true, skip_empty_lines: true}))
+        .pipe(csv.parse({delimiter: '#', columns: true, skip_empty_lines: true, relax:true}))
         .pipe(csv.transform(function (row) {
             //Si el nombre del fichero a procesar cambia, debemos reiniciar las variables
             if (fileName !== row['Fichero']){
