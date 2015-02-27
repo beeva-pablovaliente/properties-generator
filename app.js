@@ -163,7 +163,8 @@ function processFileForEnvironment(environment){
                 fileName = row['Fichero'];//La proxima vez que el nombre del fichero cambie, será este fichero el que se escriba
 
                 //Si el fichero ya se había procesado antes y tenemos un stringifier inicializado, lo utilizamos
-                if (mapFiles[environment] && mapFiles[environment][fileName]){
+                //Debemos comprobar que mapFiles[environment][fileName] no sea una function: Ejem: mapFiles[environment]['push']
+                if (mapFiles[environment] && typeof mapFiles[environment][fileName] !== 'function' && mapFiles[environment][fileName]){
                     stringifier = mapFiles[environment][fileName]; //Esta situación puede darse, si los properties q pertenecen a un fichero no aparecen todos seguidos
                 }else{
                     if (!mapFiles[environment]) {
