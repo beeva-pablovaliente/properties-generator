@@ -48,9 +48,6 @@ var filterFiles = commander.filterFiles;
 //Variable para generar cada property
 var stringifier;
 
-//Variable para controlar el nombre de la seccion
-var sectionName = '';
-
 //Codificacion de los ficheros de entrada y salida
 var fs_enconding = { encoding: 'utf8' };
 
@@ -136,20 +133,13 @@ function writeFileEnvironment(env){
     console.log("----------------------------------------");
 }
 
-function checkSection(row, stringifier){
-	if (extension === '.ini'){
-		if (row[section] !== sectionName){
-			stringifier.section(row[section]);
-			sectionName = row[section];
-		}
-	}
-}
-
 function processFileForEnvironment(environment){
     //Inicializamos nuestro stringifier
     var stringifier;
     //Nombre del fichero que se esta procesando
     var fileName = '';
+    //Nombre de la seccion
+    var sectionName = undefined;
 
     /*
      * Abre el flujo de lectura del fichero csv y procesa una a una cada línea
@@ -178,8 +168,11 @@ function processFileForEnvironment(environment){
 
             //Si el fichero a escribir no ha cambiado, acumulamos la fila en la variable stringifier
             if (!filterRow(row)){
-                //Comprobamos si es necesario añadir alguna sección
-                checkSection(row, stringifier);
+                // Comprobamos si es necesario añadir alguna sección, Antes de acumular
+                if (extension === '.ini' && row[section] !== sectionName){
+                    stringifier.section(row[section]);
+                    sectionName = row[section];
+                }
 
                 row[environment] === '' ? stringifier.property({ key: row['Property'], value: row[defaultEnv], comment: row['Comment']})
                                         : stringifier.property({ key: row['Property'], value: row[environment], comment: row['Comment']});
