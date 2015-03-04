@@ -18,7 +18,7 @@ commander
 	.option('-e, --environment <ENV>', 'Select the environment(s) to generate the properties for. Default LOC,DEV,PRE,PRO', list, ['LOC','DEV','PRE','PRO'])
 	//.option('-e, --environment <ENV>', 'Select the environment to generate the properties. Default DEV', 'DEV')
 	.option('-s, --section <column>', 'The name of the column to use as Section name. Default: Seccion', 'Seccion')
-	.option('-t, --type <type>', 'Type of the generated file(s) [properties | ini]. Default: properties', 'properties')
+	.option('-t, --type <type>', 'Type of the generated file(s) [properties | ini | yml | yaml]. Default: properties', 'properties')
     .option('-f, --filterFiles <regexp_files>', 'RegExp to generate only the files that match. Example: files that end with th: th$', '')
 	.option('--delimiterChar <char>', 'Character to delimit the columns in the CSV file. Default: #', '#')
 	.option('--defaultEnv <col>', 'If the enviroment selected has no value set, select the value from this column. Default: DEV', 'DEV')
@@ -53,6 +53,9 @@ var fs_enconding = { encoding: 'utf8' };
 
 //Caracter de Comentario para los ficheros properties de salida
 var optionsStr = { comment: "#" };
+if (commander.type == "yaml" || commander.type == "yml"){
+	optionsStr.separator = ":";
+}
 
 //Almacenamos los datos antes de escribirlos a disco
 var mapFiles = {};
