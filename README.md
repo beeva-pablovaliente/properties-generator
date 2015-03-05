@@ -29,4 +29,4 @@ node $PROPERTIES_GENERATOR/app.js -i $CSV_FILE -o $OUTPUT_DIR --defaultEnv LOC
     --delimiterChar <char>            Character to delimit the columns in the CSV file. Default: #
     --defaultEnv <col>                If the enviroment selected has no value set, select the value from this column. Default: DEV
     
-Obs.- althoug it is mainly prepared for "properties format", it admits "yml|yaml" type, if you choose that type, the program will use ":" separator for key:value instead of "="
+Obs.- althoug it is mainly prepared for "properties format", it admits "yml|yaml" type, if you choose that type, the program will use ":" separator for key:value instead of "=", also, when -t yml is chosen, it will replace the string .IDENTATION. by two blank spaces and the string .SPACE. for one, this way you can obtain a yaml format file.
