@@ -62,6 +62,13 @@ var mapFiles = {};
 //Listado de ficheros que se han filtrado. Para mostrarlo al finalizar la ejecución
 var filteredFiles = [];
 
+function parseYML(data){
+	 data = data.replace(/.IDENTATION./g,"  ");
+	 data = data.replace(/.SPACE./g," ");
+	 
+	 return data;
+}
+
 /*
  * Indica si debemos filtrar una columna del fichero de entrada
  * y evitar que se propague en la salida
@@ -113,6 +120,9 @@ function writeFileEnvironment(env){
         if (hasToWriteFile(filename)) {
             //Preparamos los datos a escribir
             var data = properties.stringify(mapFiles[env][filename], optionsStr);
+            if (commander.type === "yaml" || commander.type === "yml"){
+            	data = parseYML(data);
+            }
             try{
                 fs.writeFileSync(outputDir + filename + extension, data, fs_enconding);
                 //Si no hay excepcion, el fichero se escribió correctamente
